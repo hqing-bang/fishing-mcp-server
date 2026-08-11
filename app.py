@@ -11,21 +11,17 @@ from engine import FishingEngine
 
 app = Flask(__name__)
 
-# 使用持久化存储目录（Render Disk 会挂载到这里）
 SAVE_DIR = os.environ.get('SAVE_DIR', '.')
 SAVE_FILE = os.path.join(SAVE_DIR, 'fishing_save.json')
 
-# 确保存档目录存在
 if SAVE_DIR != '.' and not os.path.exists(SAVE_DIR):
     os.makedirs(SAVE_DIR, exist_ok=True)
 
-# 初始化游戏引擎（使用持久化路径）
 game_engine = FishingEngine(save_file=SAVE_FILE)
 
 
 @app.route('/health', methods=['GET'])
 def health():
-    """健康检查端点"""
     return jsonify({
         "status": "ok",
         "service": "fishing-mcp-server",
@@ -34,10 +30,9 @@ def health():
     })
 
 
+# 注意：这里只有唯一一个 '/mcp' 路由，且支持 GET 和 POST
 @app.route('/mcp', methods=['GET', 'POST'])
 def mcp_endpoint():
-    """MCP 请求处理端点（支持 GET 和 POST）"""
-    # 处理 GET 请求（用于测试/健康检查）
     if request.method == 'GET':
         return jsonify({
             "status": "ok",
@@ -45,7 +40,6 @@ def mcp_endpoint():
             "message": "MCP endpoint is ready. Use POST for JSON-RPC requests."
         })
 
-    # 以下是原有的 POST 处理逻辑
     try:
         request_data = request.get_json()
         method = request_data.get("method")
@@ -109,7 +103,6 @@ def mcp_endpoint():
             if tool_name == "fishing_command":
                 command = arguments.get("command", "")
                 result = game_engine.cmd(command)
-
                 return jsonify({
                     "jsonrpc": "2.0",
                     "id": request_data.get("id"),
@@ -121,7 +114,6 @@ def mcp_endpoint():
             elif tool_name == "fishing_new_game":
                 seed = arguments.get("seed", 0x9e3779b9)
                 result = game_engine.new_game(seed)
-
                 return jsonify({
                     "jsonrpc": "2.0",
                     "id": request_data.get("id"),
@@ -162,6 +154,5 @@ def mcp_endpoint():
 
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
