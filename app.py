@@ -23,15 +23,15 @@ if SAVE_DIR != '.' and not os.path.exists(SAVE_DIR):
 game_engine = FishingEngine(save_file=SAVE_FILE)
 
 
-@app.route('/health', methods=['GET'])
-def health():
-    """健康检查端点"""
-    return jsonify({
-        "status": "ok",
-        "service": "fishing-mcp-server",
-        "save_file": SAVE_FILE,
-        "save_exists": os.path.exists(SAVE_FILE)
-    })
+@app.route('/mcp', methods=['GET', 'POST'])
+def mcp_endpoint():
+    # 处理 GET 请求（用于健康检查/测试）
+    if request.method == 'GET':
+        return jsonify({
+            "status": "ok",
+            "service": "fishing-mcp-server",
+            "message": "MCP endpoint is ready. Use POST for JSON-RPC requests."
+        })
 
 
 @app.route('/mcp', methods=['POST'])
