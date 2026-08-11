@@ -23,9 +23,21 @@ if SAVE_DIR != '.' and not os.path.exists(SAVE_DIR):
 game_engine = FishingEngine(save_file=SAVE_FILE)
 
 
+@app.route('/health', methods=['GET'])
+def health():
+    """健康检查端点"""
+    return jsonify({
+        "status": "ok",
+        "service": "fishing-mcp-server",
+        "save_file": SAVE_FILE,
+        "save_exists": os.path.exists(SAVE_FILE)
+    })
+
+
 @app.route('/mcp', methods=['GET', 'POST'])
 def mcp_endpoint():
-    # 处理 GET 请求（用于健康检查/测试）
+    """MCP 请求处理端点（支持 GET 和 POST）"""
+    # 处理 GET 请求（用于测试/健康检查）
     if request.method == 'GET':
         return jsonify({
             "status": "ok",
@@ -33,10 +45,7 @@ def mcp_endpoint():
             "message": "MCP endpoint is ready. Use POST for JSON-RPC requests."
         })
 
-
-@app.route('/mcp', methods=['POST'])
-def mcp_endpoint():
-    """MCP 请求处理端点"""
+    # 以下是原有的 POST 处理逻辑
     try:
         request_data = request.get_json()
         method = request_data.get("method")
